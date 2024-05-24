@@ -1,46 +1,58 @@
-// import { FastifyReply, FastifyRequest } from 'fastify'
-// import { STANDARD, ERROR404 } from '../helpers/constants'
-// import { handleServerError } from '../helpers/errors'
-// import { prisma } from '../helpers/utils'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { STANDARD, ERROR404 } from '../helpers/constants'
+import { IUserRequest } from '../interfaces'
+import { handleServerError, ERRORS } from '../helpers/errors'
+import { prisma } from '../helpers/utils'
+import { utils } from '../helpers/utils'
 
-// export class UserController {
-//   public async create(request: FastifyRequest, reply: FastifyReply) {
+export class UserController {
+  public static async createUser(request: IUserRequest, reply: FastifyReply) {
+    try {
+      const { email, password, firstName, lastName, userName } = request.body
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: email }, { userName: userName }],
+        },
+      })
+      if (user) reply.code(409).send(ERRORS.userExists)
+
+      const hashPass = await utils.genSalt(10, password)
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          firstName,
+          userName,
+          lastName,
+          password: String(hashPass),
+        },
+      })
+      reply.code(STANDARD.CREATED).send({ message: STANDARD.messageCreated })
+    } catch (error) {
+      console.log(error)
+      handleServerError(reply, error)
+    }
+  }
+}
+
+// public async findAll(request: FastifyRequest, reply: FastifyReply) {
 //     try {
-//       const { email, password, firstName, lastName, userName } = request.body
-//       const newUser = await prisma.user.create({
-//         data: {
-//           email,
-//           firstName,
-//           userName,
-//           lastName,
-//           password: String(hashPass),
-//         },
-//       })
-//       reply.code(STANDARD.CREATED).send({ message: STANDARD.messageCreated })
+//         const { page = 1, perPage = 10 } = request.query;
+
+//         // Calculate offset based on page number and perPage value
+//         const offset = (parseInt(page as string, 10) - 1) * parseInt(perPage as string, 10);
+
+//         // Find users with pagination
+//         const users = await prisma.user.findMany({
+//             skip: offset,
+//             take: parseInt(perPage as string, 10),
+//         });
+
+//         return reply.send(users);
 //     } catch (error) {
-//       handleServerError(reply, error)
+//         // Handle server error
+//         handleServerError(reply, error);
 //     }
-//   }
-
-//   // public async findAll(request: FastifyRequest, reply: FastifyReply) {
-//   //     try {
-//   //         const { page = 1, perPage = 10 } = request.query;
-
-//   //         // Calculate offset based on page number and perPage value
-//   //         const offset = (parseInt(page as string, 10) - 1) * parseInt(perPage as string, 10);
-
-//   //         // Find users with pagination
-//   //         const users = await prisma.user.findMany({
-//   //             skip: offset,
-//   //             take: parseInt(perPage as string, 10),
-//   //         });
-
-//   //         return reply.send(users);
-//   //     } catch (error) {
-//   //         // Handle server error
-//   //         handleServerError(reply, error);
-//   //     }
-//   // }
+// }
 
 //   public async findOne(
 //     request: FastifyRequest<{ Params: { id: number } }>,
