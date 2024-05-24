@@ -6,7 +6,7 @@ import { prisma } from '../helpers/utils'
 import { utils } from '../helpers/utils'
 
 export class UserController {
-  public static async createUser(request: IUserRequest, reply: FastifyReply) {
+  static async createUser(request: IUserRequest, reply: FastifyReply) {
     try {
       const { email, password, firstName, lastName, userName } = request.body
       const user = await prisma.user.findFirst({
@@ -32,6 +32,52 @@ export class UserController {
       handleServerError(reply, error)
     }
   }
+  static async findOneUser(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) {
+    try {
+      const userId = parseInt(request.params.id)
+
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      })
+
+      if (!user) {
+        return reply
+          .code(ERROR404.statusCode)
+          .send({ message: ERROR404.message })
+      }
+
+      return reply.send(user)
+    } catch (error) {
+      console.error('Error in findOneUser:', error)
+      handleServerError(reply, error)
+    }
+  }
+
+  static async editUser(
+    request: FastifyRequest<{ Params: { id: string } }>,
+    reply: FastifyReply,
+  ) {
+    try {
+      const userId = parseInt(request.params.id)
+
+      const userUpdated = await prisma.user.update({
+        where: { id: userId },
+        data: request.body,
+      })
+      if (!userUpdated) {
+        return reply
+          .code(ERROR404.statusCode)
+          .send({ message: ERROR404.message })
+      }
+
+      reply.send(userUpdated)
+    } catch (error) {
+      handleServerError(reply, error)
+    }
+  }
 }
 
 // public async findAll(request: FastifyRequest, reply: FastifyReply) {
@@ -53,44 +99,6 @@ export class UserController {
 //         handleServerError(reply, error);
 //     }
 // }
-
-//   public async findOne(
-//     request: FastifyRequest<{ Params: { id: number } }>,
-//     reply: FastifyReply,
-//   ) {
-//     try {
-//       const user = await prisma.user.findUnique({
-//         where: { id: request.params.id },
-//       })
-//       if (!user)
-//         return reply
-//           .code(ERROR404.statusCode)
-//           .send({ message: ERROR404.message })
-//       return reply.send(user)
-//     } catch (error) {
-//       handleServerError(reply, error)
-//     }
-//   }
-
-//   public async edit(
-//     request: FastifyRequest<{ Params: { id: number } }>,
-//     reply: FastifyReply,
-//   ) {
-//     try {
-//       const userUpdated = await prisma.user.update({
-//         where: { id: request.params.id },
-//         data: request.body,
-//       })
-//       if (!userUpdated)
-//         return reply
-//           .code(ERROR404.statusCode)
-//           .send({ message: ERROR404.message })
-
-//       reply.send(userUpdated)
-//     } catch (error) {
-//       handleServerError(reply, error)
-//     }
-//   }
 
 //   public async destroy(
 //     request: FastifyRequest<{ Params: { id: number } }>,

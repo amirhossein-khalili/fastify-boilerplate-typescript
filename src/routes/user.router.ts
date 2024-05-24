@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { createUserSchema } from '../schema'
+import { createUserSchema, editUserSchema } from '../schema'
 import { UserController } from '../controllers/user.controller'
 
 async function userRouter(fastify: FastifyInstance) {
@@ -10,6 +10,19 @@ async function userRouter(fastify: FastifyInstance) {
     url: '/new',
     schema: createUserSchema,
     handler: UserController.createUser,
+  })
+
+  fastify.route({
+    method: 'GET',
+    url: '/:id',
+    handler: UserController.findOneUser,
+  })
+
+  fastify.route({
+    method: 'PATCH',
+    url: '/:id',
+    schema: editUserSchema,
+    handler: UserController.editUser,
   })
 }
 
