@@ -1,7 +1,8 @@
 import { utils } from './helpers/utils'
 import fastify from 'fastify'
 import pino from 'pino'
-import userRouter from './routes/auth.router'
+import authRouter from './routes/auth.router'
+import userRouter from './routes/user.router'
 import postRouter from './routes/post.router'
 import loadConfig from './config'
 loadConfig()
@@ -16,8 +17,9 @@ const startServer = async () => {
     server.register(require('fastify-formbody'))
     server.register(require('fastify-cors'))
     server.register(require('fastify-helmet'))
-    server.register(userRouter, { prefix: '/api/user' })
-    server.register(postRouter, { prefix: '/api/post' })
+    server.register(authRouter, { prefix: '/api/auth' })
+    server.register(userRouter, { prefix: '/api/users' })
+    server.register(postRouter, { prefix: '/api/posts' })
     server.setErrorHandler((error, request, reply) => {
       server.log.error(error)
     })
