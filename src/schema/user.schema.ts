@@ -6,3 +6,10 @@ export const createUserSchema = {
   params: S.object(),
   headers: S.object(),
 }
+
+export const editUserSchema = {
+  body: S.object(),
+  queryString: S.object(),
+  params: S.object(),
+  headers: S.object(),
+}
